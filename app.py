@@ -125,16 +125,6 @@ if st.session_state.predicted_class:
 
             # Display the response with typing effect
             stream_text(chatbot_response)
-
-# Professional Consultation Integration
-st.markdown("## Book a Professional Consultation 🦷")
-
-st.write("If you're concerned about your classification, consider booking a consultation with a professional dentist.")
-
-# Example booking button (could link to an external booking system)
-if st.button("Book Now"):
-    st.markdown("Call us on +20-1111111111", unsafe_allow_html=True)
-
 # Footer with a call-to-action and emojis
 st.markdown(
     "<footer style='text-align: center; font-size: 18px;'>"
