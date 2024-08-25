@@ -26,7 +26,7 @@ def stream_text(text):
         time.sleep(0.02)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
-openai.api_key = st.secrets["openai_api_key"]
+openai.api_key = st.secrets["openai"]["api_key"]
 
 # Streamlit app title
 st.title("Teeth Classification with AI Magic 🦷✨")
