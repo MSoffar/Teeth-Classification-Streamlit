@@ -11,13 +11,15 @@ model = load_model('teeth_classification_model.keras')
 # Define the classes
 classes = ['CaS', 'CoS', 'Gum', 'MC', 'OC', 'OLP', 'OT']
 
-# Initialize session state for chat history, and submission flags
+# Initialize session state for chat history, user input, and submission flags
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "predicted_class" not in st.session_state:
     st.session_state.predicted_class = None
 if "image_submitted" not in st.session_state:
     st.session_state.image_submitted = False  # Flag to track image submission
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""  # Manage the user input state
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -65,12 +67,12 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
                 st.markdown(f"**AI Assistant:** {message['content']}")
 
     # User input for chatbot
-    user_input = st.text_input("Ask a question related to your tooth classification...")
+    st.session_state.user_input = st.text_input("Ask a question related to your tooth classification...", value=st.session_state.user_input)
 
     if st.button("Submit Question"):  # Submit button for chatbot
-        if user_input:
+        if st.session_state.user_input:
             # Add user's message to chat history
-            st.session_state.messages.append({"role": "user", "content": user_input})
+            st.session_state.messages.append({"role": "user", "content": st.session_state.user_input})
 
             # System prompt for GPT model
             system_prompt = (
@@ -80,7 +82,7 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             )
 
             # Example prompt to GPT-4o-2024-08-06 for chatbot
-            chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
+            chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{st.session_state.user_input}'. Provide a detailed response."
 
             # Stream GPT's response
             response = openai.chat.completions.create(
@@ -107,8 +109,8 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             # After streaming, store the complete response in chat history
             st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-            # Clear the input field
-            st.experimental_rerun()
+            # Clear the user input after submission
+            st.session_state.user_input = ""
 
 # Professional Consultation Integration
 st.markdown("## Book a Professional Consultation 🦷")
