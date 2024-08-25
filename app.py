@@ -79,7 +79,7 @@ if "predicted_class" in st.session_state:
         response = openai.chat.completions.create(
             model="gpt-4o-2024-08-06",  # Using the specified model
             messages=[
-                {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice."},
+                {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice.Answer your response according to the part of "The user asked in the prompt""},
                 {"role": "user", "content": chatbot_prompt}
             ],
         )
