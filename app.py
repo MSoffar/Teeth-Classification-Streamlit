@@ -12,9 +12,13 @@ model = load_model('teeth_classification_model.keras')
 # Define the classes
 classes = ['CaS', 'CoS', 'Gum', 'MC', 'OC', 'OLP', 'OT']
 
-# Initialize session state for chat history
+# Initialize session state for chat history and insights
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "insights" not in st.session_state:
+    st.session_state.insights = None
+if "predicted_class" not in st.session_state:
+    st.session_state.predicted_class = None
 
 # Function to simulate live typing effect on the same line
 def stream_text(text):
@@ -23,7 +27,7 @@ def stream_text(text):
     for char in text:
         full_text += char
         placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.02)  # Adjust the speed of the typing effect
+        time.sleep(0.01)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -49,36 +53,42 @@ if uploaded_file is not None:
     predictions = model.predict(img_array)
     predicted_class = classes[np.argmax(predictions)]
 
+    # Store the prediction in session state
+    st.session_state.predicted_class = predicted_class
+
     # Display the prediction
     st.markdown(f"<h2>Your Tooth's Class is: {predicted_class} 😁</h2>", unsafe_allow_html=True)
 
-    # Call GPT-4o-2024-08-06 for insights
-    st.markdown("<h3>Getting insights...</h3>", unsafe_allow_html=True)
+    # If insights haven't been generated yet, call GPT for insights
+    if st.session_state.insights is None:
+        st.markdown("<h3>Getting insights...</h3>", unsafe_allow_html=True)
 
-    # System prompt for GPT model
-    system_prompt = (
-        "You are a PhD dentist with great knowledge in dental care. "
-        "You provide concise, accurate, and to-the-point responses. "
-        "Focus on delivering clear and actionable advice."
-    )
+        # System prompt for GPT model
+        system_prompt = (
+            "You are a PhD dentist with great knowledge in dental care. "
+            "You provide concise, accurate, and to-the-point responses. "
+            "Focus on delivering clear and actionable advice."
+        )
 
-    # Example prompt to GPT-4o-2024-08-06
-    prompt = f"You have classified a tooth as {predicted_class}. Provide detailed insights about this classification, including what it means, how it can be treated, and preventive measures."
+        # Example prompt to GPT-4o-2024-08-06
+        prompt = f"You have classified a tooth as {predicted_class}. Provide detailed insights about this classification, including what it means, how it can be treated, and preventive measures."
 
-    response = openai.chat.completions.create(
-        model="gpt-4o-2024-08-06",  # Using the specified model
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt}
-        ],
-    )
+        response = openai.chat.completions.create(
+            model="gpt-4o-2024-08-06",  # Using the specified model
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+        )
 
-    insights = response.choices[0].message.content.strip()
+        # Store the insights in session state
+        st.session_state.insights = response.choices[0].message.content.strip()
 
     # Display the insights with live typing effect
-    stream_text(insights)
+    stream_text(st.session_state.insights)
 
-    # Chatbot interaction
+# Chatbot interaction
+if st.session_state.predicted_class:
     st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
     # Display chat history
@@ -97,7 +107,7 @@ if uploaded_file is not None:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         # Example prompt to GPT-4o-2024-08-06 for chatbot
-        chatbot_prompt = f"You have classified a tooth as {predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
+        chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
         response = openai.chat.completions.create(
             model="gpt-4o-2024-08-06",  # Using the specified model
