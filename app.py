@@ -12,13 +12,15 @@ model = load_model('teeth_classification_model.keras')
 # Define the classes
 classes = ['CaS', 'CoS', 'Gum', 'MC', 'OC', 'OLP', 'OT']
 
-# Initialize session state for chat history and insights
+# Initialize session state for chat history, insights, and submission flags
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "insights" not in st.session_state:
     st.session_state.insights = None
 if "predicted_class" not in st.session_state:
     st.session_state.predicted_class = None
+if "image_submitted" not in st.session_state:
+    st.session_state.image_submitted = False  # Flag to track image submission
 
 # Function to simulate live typing effect on the same line
 def stream_text(text):
@@ -27,7 +29,7 @@ def stream_text(text):
     for char in text:
         full_text += char
         placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.005)  # Adjust the speed of the typing effect
+        time.sleep(0.02)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -43,21 +45,25 @@ if uploaded_file is not None:
     img = Image.open(uploaded_file)
     st.image(img, caption='Uploaded Image 🖼️', use_column_width=True)
 
-    # Preprocess the image
-    img = img.resize((224, 224))  # Resize to the target size
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-    img_array = img_array / 255.0  # Normalize the image
+    if st.button("Submit Image"):  # Submit button for image classification
+        # Preprocess the image
+        img = img.resize((224, 224))  # Resize to the target size
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+        img_array = img_array / 255.0  # Normalize the image
 
-    # Make prediction
-    predictions = model.predict(img_array)
-    predicted_class = classes[np.argmax(predictions)]
+        # Make prediction
+        predictions = model.predict(img_array)
+        predicted_class = classes[np.argmax(predictions)]
 
-    # Store the prediction in session state
-    st.session_state.predicted_class = predicted_class
+        # Store the prediction in session state
+        st.session_state.predicted_class = predicted_class
+        st.session_state.image_submitted = True  # Update the flag to indicate submission
+        st.session_state.insights = None  # Reset insights if a new image is submitted
 
+if st.session_state.image_submitted and st.session_state.predicted_class:
     # Display the prediction
-    st.markdown(f"<h2>Your Tooth's Class is: {predicted_class} 😁</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2>Your Tooth's Class is: {st.session_state.predicted_class} 😁</h2>", unsafe_allow_html=True)
 
     # If insights haven't been generated yet, call GPT for insights
     if st.session_state.insights is None:
@@ -71,7 +77,7 @@ if uploaded_file is not None:
         )
 
         # Example prompt to GPT-4o-2024-08-06
-        prompt = f"You have classified a tooth as {predicted_class}. Provide detailed insights about this classification, including what it means, how it can be treated, and preventive measures."
+        prompt = f"You have classified a tooth as {st.session_state.predicted_class}. Provide detailed insights about this classification, including what it means, how it can be treated, and preventive measures."
 
         response = openai.chat.completions.create(
             model="gpt-4o-2024-08-06",  # Using the specified model
@@ -88,7 +94,7 @@ if uploaded_file is not None:
     stream_text(st.session_state.insights)
 
 # Chatbot interaction
-if st.session_state.predicted_class:
+if st.session_state.image_submitted and st.session_state.predicted_class:
     st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
     # Display chat history
@@ -102,7 +108,7 @@ if st.session_state.predicted_class:
     # User input for chatbot
     user_input = st.text_input("Ask a question related to your tooth classification...")
 
-    if st.button("Submit"):  # Submit button for chatbot
+    if st.button("Submit Question"):  # Submit button for chatbot
         if user_input:
             # Add user's message to chat history
             st.session_state.messages.append({"role": "user", "content": user_input})
@@ -125,6 +131,16 @@ if st.session_state.predicted_class:
 
             # Display the response with typing effect
             stream_text(chatbot_response)
+
+# Professional Consultation Integration
+st.markdown("## Book a Professional Consultation 🦷")
+
+st.write("If you're concerned about your classification, consider booking a consultation with a professional dentist.")
+
+# Example booking button (could link to an external booking system)
+if st.button("Book Now"):
+    st.markdown("Call us on +20-1111111111", unsafe_allow_html=True)
+
 # Footer with a call-to-action and emojis
 st.markdown(
     "<footer style='text-align: center; font-size: 18px;'>"
