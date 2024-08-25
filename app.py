@@ -79,7 +79,8 @@ if "predicted_class" in st.session_state:
     # User input for chatbot
     user_input = st.text_input("Ask a question related to your tooth classification...", key="user_input")
 
-    if user_input and st.button("Submit Query"):
+    # Display the submit button for chatbot input
+    if st.button("Submit Query") and user_input:
         # Add user's message to chat history
         st.session_state.messages.append({"role": "user", "content": user_input})
 
@@ -108,6 +109,3 @@ if "predicted_class" in st.session_state:
 
         # Reset the input field
         st.session_state.user_input = ""
-
-# User input with a placeholder only (no label)
-st.text_input("", placeholder="Type your message here...", key="user_input_2", on_change=lambda: process_input())
