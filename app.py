@@ -37,7 +37,7 @@ def assemble_chat(messages, current_response=""):
     return chat_history
 
 # OpenAI GPT-4o setup
-openai.api_key = st.secrets["openai_api_key"]
+openai.api_key = st.secrets["openai"]["api_key"]
 
 # Placeholder for chat history
 chat_placeholder = st.empty()
