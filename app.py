@@ -4,6 +4,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from PIL import Image
 import openai
+import time  # Import time module to simulate streaming effect
 
 # Load the classification model
 model = load_model('teeth_classification_model.keras')
@@ -84,30 +85,24 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             # Example prompt to GPT-4o-2024-08-06 for chatbot
             chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{st.session_state.user_input}'. Provide a detailed response."
 
-            # Stream GPT's response
-            response = openai.chat.completions.create(
+            # Generate GPT response
+            response = openai.ChatCompletion.create(
                 model="gpt-4o-2024-08-06",  # Using the specified model
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": chatbot_prompt}
-                ],
-                stream=True  # Enable streaming
+                ]
             )
 
-            # Initialize an empty variable to store the full response
-            full_response = ""
+            chatbot_response = response['choices'][0]['message']['content'].strip()
 
-            # Stream the response
-            for chunk in response:
-                if "choices" in chunk:
-                    chunk_message = chunk["choices"][0]["message"]["content"]
-                    full_response += chunk_message  # Append the chunk to the full response
-
-                    # Display the streaming content in real-time
-                    st.markdown(f"**AI Assistant:** {full_response}")
+            # Simulate streaming by splitting the response into chunks
+            for chunk in chatbot_response.split(". "):  # Split by sentences for a more natural stream
+                st.markdown(f"**AI Assistant:** {chunk}.")
+                time.sleep(0.5)  # Simulate a delay between chunks
 
             # After streaming, store the complete response in chat history
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
 
             # Clear the user input after submission
             st.session_state.user_input = ""
