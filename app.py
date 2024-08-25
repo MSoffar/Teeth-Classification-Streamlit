@@ -101,12 +101,11 @@ if st.button("Submit Query") and user_input:
 
         chatbot_response = response.choices[0].message.content.strip()
 
-        # Add AI's response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
-
-        # Stream the response with typing effect
-        chat_placeholder.empty()  # Clear previous content before updating
+        # Stream the response with typing effect (do not add to the chat history immediately)
         simulate_typing(chatbot_response, chat_placeholder)
+
+        # After streaming is finished, add the response to the chat history
+        st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
