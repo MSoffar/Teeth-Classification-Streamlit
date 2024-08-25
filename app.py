@@ -16,6 +16,9 @@ classes = ['CaS', 'CoS', 'Gum', 'MC', 'OC', 'OLP', 'OT']
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
+
 # Function to simulate live typing effect
 def simulate_typing(response_text, chat_placeholder, delay=0.005):
     typed_text = ""
@@ -46,7 +49,48 @@ chat_placeholder = st.empty()
 st.image("logo.jpg", width=150)  # Display your logo image
 st.title("Teeth Classification with AI Magic 🦷✨")
 
-# File uploader
+# Chatbot section
+st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
+
+# Display initial chat history
+chat_placeholder.markdown(assemble_chat(st.session_state.messages))
+
+# User input for chatbot
+user_input = st.text_input("Ask a question related to your tooth classification...", key="user_input")
+
+# Display the submit button for chatbot input
+if st.button("Submit Query") and user_input:
+    # Add user's message to chat history
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    # Example prompt to GPT-4o-2024-08-06 for chatbot
+    chatbot_prompt = f"The user asked: '{user_input}'. Provide a detailed response."
+
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4o-2024-08-06",  # Using the specified model
+            messages=[
+                {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice. Please focus your reply on the user's specific query."},
+                {"role": "user", "content": chatbot_prompt}
+            ],
+        )
+
+        chatbot_response = response.choices[0].message.content.strip()
+
+        # Add AI's response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
+
+        # Stream the response with typing effect
+        simulate_typing(chatbot_response, chat_placeholder)
+
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+
+    # Reset the input field
+    st.session_state.user_input = ""
+
+# File uploader for image classification
+st.markdown("### Upload an image to classify your tooth:")
 uploaded_file = st.file_uploader("Choose an image to classify...", type="jpg")
 
 if uploaded_file is not None:
@@ -68,44 +112,3 @@ if uploaded_file is not None:
 
         # Save the prediction in session state for use in the chatbot
         st.session_state.predicted_class = predicted_class
-
-# Chatbot section
-if "predicted_class" in st.session_state:
-    st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
-
-    # Display initial chat history
-    chat_placeholder.markdown(assemble_chat(st.session_state.messages))
-
-    # User input for chatbot
-    user_input = st.text_input("Ask a question related to your tooth classification...", key="user_input")
-
-    # Display the submit button for chatbot input
-    if st.button("Submit Query") and user_input:
-        # Add user's message to chat history
-        st.session_state.messages.append({"role": "user", "content": user_input})
-
-        # Example prompt to GPT-4o-2024-08-06 for chatbot
-        chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
-
-        try:
-            response = openai.chat.completions.create(
-                model="gpt-4o-2024-08-06",  # Using the specified model
-                messages=[
-                    {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice. Please focus your reply on the user's specific query."},
-                    {"role": "user", "content": chatbot_prompt}
-                ],
-            )
-
-            chatbot_response = response.choices[0].message.content.strip()
-
-            # Add AI's response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
-
-            # Stream the response with typing effect
-            simulate_typing(chatbot_response, chat_placeholder)
-
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-
-        # Reset the input field
-        st.session_state.user_input = ""
