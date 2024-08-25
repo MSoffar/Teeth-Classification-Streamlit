@@ -53,7 +53,7 @@ if uploaded_file is not None:
     st.markdown(f"<h2>Your Tooth's Class is: {predicted_class} 😁</h2>", unsafe_allow_html=True)
 
     # Call GPT-4o-2024-08-06 for insights
-    st.markdown("<h3>Getting insights from GPT-4o-2024-08-06...</h3>", unsafe_allow_html=True)
+    st.markdown("<h3>Getting insights...</h3>", unsafe_allow_html=True)
 
     # System prompt for GPT model
     system_prompt = (
