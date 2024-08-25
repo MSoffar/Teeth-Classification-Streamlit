@@ -87,8 +87,8 @@ if st.button("Submit Query") and user_input:
     # Add user's message to chat history
     st.session_state.messages.append({"role": "user", "content": user_input})
 
-    # Example prompt to GPT-4o-2024-08-06 for chatbot
-    chatbot_prompt = f"The user asked: '{user_input}'. Provide a detailed response."
+    # Example prompt to GPT-4o-2024-08-06 for chatbot, including the tooth classification
+    chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
     try:
         response = openai.chat.completions.create(
@@ -109,9 +109,6 @@ if st.button("Submit Query") and user_input:
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
-
-    # Reset the input field after streaming is finished
-    st.session_state.user_input = ""
 
     # Refresh the chat history to include the latest interaction
     chat_placeholder.markdown(assemble_chat(st.session_state.messages))
