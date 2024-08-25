@@ -23,7 +23,7 @@ def stream_text(text):
     for char in text:
         full_text += char
         placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.01)  # Adjust the speed of the typing effect
+        time.sleep(0.02)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -66,7 +66,7 @@ if uploaded_file is not None:
     prompt = f"You have classified a tooth as {predicted_class}. Provide detailed insights about this classification, including what it means, how it can be treated, and preventive measures."
 
     response = openai.chat.completions.create(
-        model="gpt-4o-mini-2024-07-18",  # Using the specified model
+        model="gpt-4o-2024-08-06",  # Using the specified model
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
@@ -100,7 +100,7 @@ if uploaded_file is not None:
         chatbot_prompt = f"You have classified a tooth as {predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
         response = openai.chat.completions.create(
-            model="gpt-4o-mini-2024-07-18",  # Using the specified model
+            model="gpt-4o-2024-08-06",  # Using the specified model
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": chatbot_prompt}
@@ -114,48 +114,6 @@ if uploaded_file is not None:
 
         # Display the response with typing effect
         stream_text(chatbot_response)
-
-# Dental Health Quiz
-st.markdown("## Dental Health Quiz 📝")
-
-# Sample Quiz Questions with unique keys
-st.write("How often do you brush your teeth?")
-brush_freq = st.radio("", ('Once a day', 'Twice a day', 'More than twice'), key="brush_freq", index=None)
-
-st.write("Do you floss regularly?")
-floss_freq = st.radio("", ('Yes', 'No'), key="floss_freq", index=None)
-
-st.write("Do you consume sugary foods or drinks often?")
-sugar_consumption = st.radio("", ('Yes', 'No'), key="sugar_consumption", index=None)
-
-# Processing only happens after clicking the button
-if st.button("Get Recommendations"):
-    # Provide recommendations based on answers
-    recommendation_prompt = f"A person brushes their teeth {brush_freq}, flosses {floss_freq}, and consumes sugary foods: {sugar_consumption}. Provide personalized dental care recommendations."
-
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini-2024-07-18",  # Using the specified model
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": recommendation_prompt}
-        ],
-    )
-
-    recommendations = response.choices[0].message.content.strip()
-
-    st.markdown(f"**Personalized Recommendations:** {recommendations}")
-
-# Gamification and Progress Tracking
-st.markdown("## Track Your Progress & Earn Rewards 🎉")
-
-# Example progress tracker
-progress = st.progress(0)
-
-if st.button("Complete Today's Task"):
-    for i in range(1, 101):
-        progress.progress(i)
-        time.sleep(0.05)  # Simulate task completion
-    st.success("Congratulations! You've earned a badge 🏅")
 
 # Professional Consultation Integration
 st.markdown("## Book a Professional Consultation 🦷")
