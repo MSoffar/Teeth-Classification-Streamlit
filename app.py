@@ -86,7 +86,7 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{st.session_state.user_input}'. Provide a detailed response."
 
             # Generate GPT response
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4o-2024-08-06",  # Using the specified model
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -94,7 +94,7 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
                 ]
             )
 
-            chatbot_response = response['choices'][0]['message']['content'].strip()
+            chatbot_response = response['choices'][0].message.content.strip()
 
             # Simulate streaming by splitting the response into chunks
             for chunk in chatbot_response.split(". "):  # Split by sentences for a more natural stream
