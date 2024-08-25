@@ -42,9 +42,6 @@ def assemble_chat(messages, current_response=""):
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
 
-# Placeholder for chat history
-chat_placeholder = st.empty()
-
 # Streamlit app title
 st.image("logo.jpg", width=150)  # Display your logo image
 st.title("Teeth Classification with AI Magic 🦷✨")
@@ -76,6 +73,9 @@ if uploaded_file is not None:
 # Chatbot section
 st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
+# Placeholder for chat history
+chat_placeholder = st.empty()
+
 # Display initial chat history
 chat_placeholder.markdown(assemble_chat(st.session_state.messages))
 
@@ -105,10 +105,14 @@ if st.button("Submit Query") and user_input:
         st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
 
         # Stream the response with typing effect
+        chat_placeholder.empty()  # Clear previous content before updating
         simulate_typing(chatbot_response, chat_placeholder)
-
-        # Reset the input field after streaming is finished
-        st.session_state.user_input = ""
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
+
+    # Reset the input field after streaming is finished
+    st.session_state.user_input = ""
+
+    # Refresh the chat history to include the latest interaction
+    chat_placeholder.markdown(assemble_chat(st.session_state.messages))
