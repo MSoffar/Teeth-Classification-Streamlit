@@ -17,7 +17,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # Function to simulate live typing effect
-def simulate_typing(response_text, chat_placeholder, delay=0.03):
+def simulate_typing(response_text, chat_placeholder, delay=0.005):
     typed_text = ""
     for char in response_text:
         typed_text += char
