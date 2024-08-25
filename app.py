@@ -3,10 +3,10 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import openai
-import time  # Import time for simulating live typing
+import time
 
 # Load the trained model
-model = load_model('teeth_classification_model.keras')  # Updated model file name
+model = load_model('teeth_classification_model.keras')  # Ensure this model path is correct
 
 # Define class names
 class_names = ['CaS', 'CoS', 'Gum', 'MC', 'OC', 'OLP', 'OT']
@@ -23,30 +23,40 @@ system_prompt = (
 
 # Function to make predictions and display the result
 def predict_and_display(image_file):
-    img = image.load_img(image_file, target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0) / 255.0
+    try:
+        # Load and preprocess the image
+        img = image.load_img(image_file, target_size=(224, 224))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0) / 255.0
+        
+        # Make a prediction (batch size of 1 for stability)
+        prediction = model.predict(img_array, batch_size=1)
+        predicted_class = class_names[np.argmax(prediction)]
+        
+        # Display results
+        st.write(f"### The detected dental disease is: **{predicted_class}** 😢")
+        st.markdown("### 😱 😟 😔 😩 😖 😫 😞")
+        st.image(image_file, caption=f'Predicted: {predicted_class}', use_column_width=True)
     
-    prediction = model.predict(img_array)
-    predicted_class = class_names[np.argmax(prediction)]
-    
-    st.write(f"### The detected dental disease is: **{predicted_class}** 😢")
-    st.markdown("### 😱 😟 😔 😩 😖 😫 😞")
-
-    # Display the uploaded image
-    st.image(image_file, caption=f'Predicted: {predicted_class}', use_column_width=True)
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {str(e)}")
 
 # Function for chatbot interaction
 def get_chatbot_response(chatbot_prompt):
-    response = openai.chat.completions.create(
-        model="gpt-4o-2024-08-06",  # Using the specified model
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": chatbot_prompt}
-        ]
-    )
-    chatbot_response = response.choices[0].message.content.strip()
-    return chatbot_response
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4o-2024-08-06",  # Using the specified model
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": chatbot_prompt}
+            ]
+        )
+        chatbot_response =  response.choices[0].message.content.strip()
+        return chatbot_response
+    
+    except Exception as e:
+        st.error(f"An error occurred while getting the chatbot response: {str(e)}")
+        return ""
 
 # Streamlit app UI
 st.title("Teeth Disease Classifier and Dental Care Chatbot 🦷")
