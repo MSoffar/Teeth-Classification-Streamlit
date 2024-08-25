@@ -110,4 +110,4 @@ if "predicted_class" in st.session_state:
         st.session_state.user_input = ""
 
 # User input with a placeholder only (no label)
-st.text_input("", placeholder="Type your message here...", key="user_input", on_change=lambda: process_input())
+st.text_input("", placeholder="Type your message here...", key="user_input_2", on_change=lambda: process_input())
