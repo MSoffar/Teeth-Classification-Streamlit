@@ -4,7 +4,6 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from PIL import Image
 import openai
-import time
 
 # Load the classification model
 model = load_model('teeth_classification_model.keras')
@@ -57,7 +56,7 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
 if st.session_state.image_submitted and st.session_state.predicted_class:
     st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
-    # Display chat history without streaming
+    # Display chat history
     if st.session_state.messages:
         for message in st.session_state.messages:
             if message["role"] == "user":
@@ -83,28 +82,43 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             # Example prompt to GPT-4o-2024-08-06 for chatbot
             chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
-            # Stream GPT response
+            # Stream GPT's response
             response = openai.chat.completions.create(
                 model="gpt-4o-2024-08-06",  # Using the specified model
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": chatbot_prompt}
                 ],
-                stream=True  # Stream the response
+                stream=True  # Enable streaming
             )
 
-            # Placeholder for streaming text
+            # Initialize an empty variable to store the full response
             full_response = ""
-            for chunk in response:
-                chunk_text = chunk['choices'][0].get('delta', {}).get('content', '')
-                full_response += chunk_text
-                st.write(f"**AI Assistant:** {full_response}")
 
-            # Add AI's response to chat history
+            # Stream the response
+            for chunk in response:
+                if "choices" in chunk:
+                    chunk_message = chunk["choices"][0]["message"]["content"]
+                    full_response += chunk_message  # Append the chunk to the full response
+
+                    # Display the streaming content in real-time
+                    st.markdown(f"**AI Assistant:** {full_response}")
+
+            # After streaming, store the complete response in chat history
             st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-            # Clear the input field after submission
+            # Clear the input field
             st.experimental_rerun()
+
+# Professional Consultation Integration
+st.markdown("## Book a Professional Consultation 🦷")
+
+st.write("If you're concerned about your classification, consider booking a consultation with a professional dentist.")
+
+# Example booking button (could link to an external booking system)
+if st.button("Book Now"):
+    st.markdown("Call us on +20-1111111111", unsafe_allow_html=True)
+
 # Footer with a call-to-action and emojis
 st.markdown(
     "<footer style='text-align: center; font-size: 18px;'>"
