@@ -22,6 +22,13 @@ if "predicted_class" not in st.session_state:
 if "image_submitted" not in st.session_state:
     st.session_state.image_submitted = False  # Flag to track image submission
 
+# Define the system prompt for GPT model
+system_prompt = (
+    "You are a PhD dentist with great knowledge in dental care. "
+    "You provide concise, accurate, and to-the-point responses. "
+    "Focus on delivering clear and actionable advice."
+)
+
 # Function to simulate live typing effect on the same line
 def stream_text(text):
     placeholder = st.empty()  # Create a placeholder
@@ -29,7 +36,7 @@ def stream_text(text):
     for char in text:
         full_text += char
         placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.005)  # Adjust the speed of the typing effect
+        time.sleep(0.02)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -69,13 +76,6 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
     if st.session_state.insights is None:
         st.markdown("<h3>Getting insights...</h3>", unsafe_allow_html=True)
 
-        # System prompt for GPT model
-        system_prompt = (
-            "You are a PhD dentist with great knowledge in dental care. "
-            "You provide concise, accurate, and to-the-point responses. "
-            "Focus on delivering clear and actionable advice."
-        )
-
         # Example prompt to GPT-4o-2024-08-06
         prompt = f"You have classified a tooth as {st.session_state.predicted_class}. Provide detailed insights about this classification, including what it means, how it can be treated, and preventive measures."
 
@@ -97,13 +97,13 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
 if st.session_state.image_submitted and st.session_state.predicted_class:
     st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
-    # Display chat history
+    # Display chat history without streaming
     if st.session_state.messages:
         for message in st.session_state.messages:
             if message["role"] == "user":
                 st.markdown(f"**You:** {message['content']}")
             else:
-                stream_text(message["content"])  # Display AI responses with typing effect
+                st.markdown(f"**AI Assistant:** {message['content']}")
 
     # User input for chatbot
     user_input = st.text_input("Ask a question related to your tooth classification...")
@@ -129,18 +129,8 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             # Add AI's response to chat history
             st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
 
-            # Display the response with typing effect
+            # Display only the new AI response with typing effect
             stream_text(chatbot_response)
-
-# Professional Consultation Integration
-st.markdown("## Book a Professional Consultation 🦷")
-
-st.write("If you're concerned about your classification, consider booking a consultation with a professional dentist.")
-
-# Example booking button (could link to an external booking system)
-if st.button("Book Now"):
-    st.markdown("Call us on +20-1111111111", unsafe_allow_html=True)
-
 # Footer with a call-to-action and emojis
 st.markdown(
     "<footer style='text-align: center; font-size: 18px;'>"
