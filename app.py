@@ -49,6 +49,30 @@ chat_placeholder = st.empty()
 st.image("logo.jpg", width=150)  # Display your logo image
 st.title("Teeth Classification with AI Magic 🦷✨")
 
+# File uploader for image classification
+st.markdown("### Upload an image to classify your tooth:")
+uploaded_file = st.file_uploader("Choose an image to classify...", type="jpg")
+
+if uploaded_file is not None:
+    st.image(Image.open(uploaded_file), caption='Uploaded Image 🖼️', use_column_width=False, width=300)  # Adjust the width of the disease image
+
+    # Button to submit the image and make prediction
+    if st.button("Submit Image"):
+        # Preprocess the image
+        img = Image.open(uploaded_file).resize((224, 224))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0) / 255.0  # Normalize the image
+
+        # Make prediction
+        predictions = model.predict(img_array)
+        predicted_class = classes[np.argmax(predictions)]
+
+        # Display the prediction with a sad emoji
+        st.write(f"### Your Tooth's Class is: {predicted_class} 😢")
+
+        # Save the prediction in session state for use in the chatbot
+        st.session_state.predicted_class = predicted_class
+
 # Chatbot section
 st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
@@ -83,32 +107,8 @@ if st.button("Submit Query") and user_input:
         # Stream the response with typing effect
         simulate_typing(chatbot_response, chat_placeholder)
 
+        # Reset the input field after streaming is finished
+        st.session_state.user_input = ""
+
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
-
-    # Reset the input field
-    st.session_state.user_input = ""
-
-# File uploader for image classification
-st.markdown("### Upload an image to classify your tooth:")
-uploaded_file = st.file_uploader("Choose an image to classify...", type="jpg")
-
-if uploaded_file is not None:
-    st.image(Image.open(uploaded_file), caption='Uploaded Image 🖼️', use_column_width=False, width=300)  # Adjust the width of the disease image
-
-    # Button to submit the image and make prediction
-    if st.button("Submit Image"):
-        # Preprocess the image
-        img = Image.open(uploaded_file).resize((224, 224))
-        img_array = image.img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0) / 255.0  # Normalize the image
-
-        # Make prediction
-        predictions = model.predict(img_array)
-        predicted_class = classes[np.argmax(predictions)]
-
-        # Display the prediction with a sad emoji
-        st.write(f"### Your Tooth's Class is: {predicted_class} 😢")
-
-        # Save the prediction in session state for use in the chatbot
-        st.session_state.predicted_class = predicted_class
