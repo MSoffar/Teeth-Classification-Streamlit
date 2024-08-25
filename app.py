@@ -50,7 +50,7 @@ st.title("Teeth Classification with AI Magic 🦷✨")
 uploaded_file = st.file_uploader("Choose an image to classify...", type="jpg")
 
 if uploaded_file is not None:
-    st.image(Image.open(uploaded_file), caption='Uploaded Image 🖼️', use_column_width=True)
+    st.image(Image.open(uploaded_file), caption='Uploaded Image 🖼️', use_column_width=False, width=300)  # Adjust the width of the disease image
 
     # Button to submit the image and make prediction
     if st.button("Submit Image"):
@@ -63,8 +63,8 @@ if uploaded_file is not None:
         predictions = model.predict(img_array)
         predicted_class = classes[np.argmax(predictions)]
 
-        # Display the prediction
-        st.write(f"### Your Tooth's Class is: {predicted_class} 😁")
+        # Display the prediction with a sad emoji
+        st.write(f"### Your Tooth's Class is: {predicted_class} 😢")
 
         # Save the prediction in session state for use in the chatbot
         st.session_state.predicted_class = predicted_class
@@ -91,7 +91,7 @@ if "predicted_class" in st.session_state:
             response = openai.chat.completions.create(
                 model="gpt-4o-2024-08-06",  # Using the specified model
                 messages=[
-                    {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice.Please ur reply mainly relevant to the user asked part as this is the most important part of the prompt!"},
+                    {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice. Please focus your reply on the user's specific query."},
                     {"role": "user", "content": chatbot_prompt}
                 ],
             )
