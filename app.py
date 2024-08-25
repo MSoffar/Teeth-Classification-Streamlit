@@ -29,7 +29,7 @@ def stream_text(text):
     for char in text:
         full_text += char
         placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.02)  # Adjust the speed of the typing effect
+        time.sleep(0.005)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
