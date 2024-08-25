@@ -84,7 +84,7 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
             # Stream GPT response
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4o-2024-08-06",  # Using the specified model
                 messages=[
                     {"role": "system", "content": system_prompt},
