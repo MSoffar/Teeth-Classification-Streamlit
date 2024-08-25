@@ -27,7 +27,7 @@ def stream_text(text):
     for char in text:
         full_text += char
         placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.01)  # Adjust the speed of the typing effect
+        time.sleep(0.02)  # Adjust the speed of the typing effect
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai"]["api_key"]
@@ -102,28 +102,29 @@ if st.session_state.predicted_class:
     # User input for chatbot
     user_input = st.text_input("Ask a question related to your tooth classification...")
 
-    if user_input:
-        # Add user's message to chat history
-        st.session_state.messages.append({"role": "user", "content": user_input})
+    if st.button("Submit"):  # Submit button for chatbot
+        if user_input:
+            # Add user's message to chat history
+            st.session_state.messages.append({"role": "user", "content": user_input})
 
-        # Example prompt to GPT-4o-2024-08-06 for chatbot
-        chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
+            # Example prompt to GPT-4o-2024-08-06 for chatbot
+            chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
-        response = openai.chat.completions.create(
-            model="gpt-4o-2024-08-06",  # Using the specified model
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": chatbot_prompt}
-            ],
-        )
+            response = openai.chat.completions.create(
+                model="gpt-4o-2024-08-06",  # Using the specified model
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": chatbot_prompt}
+                ],
+            )
 
-        chatbot_response = response.choices[0].message.content.strip()
+            chatbot_response = response.choices[0].message.content.strip()
 
-        # Add AI's response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
+            # Add AI's response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
 
-        # Display the response with typing effect
-        stream_text(chatbot_response)
+            # Display the response with typing effect
+            stream_text(chatbot_response)
 
 # Professional Consultation Integration
 st.markdown("## Book a Professional Consultation 🦷")
