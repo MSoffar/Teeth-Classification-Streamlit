@@ -42,20 +42,22 @@ def assemble_chat(messages, current_response=""):
 # Streamlit UI configuration
 st.set_page_config(page_title="Teeth Classification and Chatbot", layout="centered")
 
-# Custom CSS for layout
+# Custom CSS for background image and layout
 st.markdown(
-    """
+    f"""
     <style>
-    .main {
-        background-color: #1E1E1E;
+    .main {{
+        background-image: url('dentist.jpg');
+        background-size: cover;
+        background-position: center;
         color: #E1E1E1;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .stTextInput {
+    }}
+    .stTextInput {{
         background-color: #323232;
         color: #fff;
-    }
-    .stButton button {
+    }}
+    .stButton button {{
         background-color: #0056b3;
         color: #fff;
         border: none;
@@ -63,45 +65,45 @@ st.markdown(
         font-size: 14px;
         border-radius: 5px;
         margin: 5px 0;
-    }
-    .stMarkdown {
+    }}
+    .stMarkdown {{
         color: #fff;
-    }
-    .chat-history {
+    }}
+    .chat-history {{
         border-radius: 10px;
         padding: 20px;
         background-color: #2B2B2B;
         max-height: 400px;
         overflow-y: auto;
         margin-bottom: 10px;
-    }
-    .logo {
+    }}
+    .logo {{
         display: flex;
         justify-content: center;
         margin-bottom: 20px;
-    }
-    .chat-input {
+    }}
+    .chat-input {{
         display: flex;
         align-items: center;
-    }
-    .chat-input .stTextInput {
+    }}
+    .chat-input .stTextInput {{
         flex-grow: 1;
-    }
-    .chat-input .stButton {
+    }}
+    .chat-input .stButton {{
         margin-left: -70px;
         z-index: 1;
-    }
-    .chat-input .stButton button {
+    }}
+    .chat-input .stButton button {{
         border-radius: 20px;
         padding: 2px 15px;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Display the dentist image centered
-st.image("dentist.jpg", width=150)  # Display your dentist image
+# Display the logo image centered
+st.image("logo.jpg", width=150)  # Display your logo image
 
 st.title("Teeth Classification with AI Magic 🦷✨")
 st.subheader("Chat with Sally, your virtual assistant.")
