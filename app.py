@@ -4,6 +4,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from PIL import Image
 import openai
+import time
 
 # Load the classification model
 model = load_model('teeth_classification_model.keras')
@@ -82,21 +83,28 @@ if st.session_state.image_submitted and st.session_state.predicted_class:
             # Example prompt to GPT-4o-2024-08-06 for chatbot
             chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
-            response = openai.chat.completions.create(
+            # Stream GPT response
+            response = openai.ChatCompletion.create(
                 model="gpt-4o-2024-08-06",  # Using the specified model
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": chatbot_prompt}
                 ],
+                stream=True  # Stream the response
             )
 
-            chatbot_response = response.choices[0].message.content.strip()
+            # Placeholder for streaming text
+            full_response = ""
+            for chunk in response:
+                chunk_text = chunk['choices'][0].get('delta', {}).get('content', '')
+                full_response += chunk_text
+                st.write(f"**AI Assistant:** {full_response}")
 
             # Add AI's response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-            # Display only the new AI response without streaming
-            st.markdown(f"**AI Assistant:** {chatbot_response}")
+            # Clear the input field after submission
+            st.experimental_rerun()
 # Footer with a call-to-action and emojis
 st.markdown(
     "<footer style='text-align: center; font-size: 18px;'>"
