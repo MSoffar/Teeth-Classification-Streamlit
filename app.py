@@ -12,26 +12,38 @@ model = load_model('teeth_classification_model.keras')
 # Define the classes
 classes = ['CaS', 'CoS', 'Gum', 'MC', 'OC', 'OLP', 'OT']
 
-# Initialize session state for chat history and user input
+# Initialize session state for chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
+# Function to simulate live typing effect
+def simulate_typing(response_text, chat_placeholder, delay=0.03):
+    typed_text = ""
+    for char in response_text:
+        typed_text += char
+        chat_placeholder.markdown(assemble_chat(st.session_state.messages, typed_text))
+        time.sleep(delay)
 
-# Function to simulate live typing effect on the same line
-def stream_text(text):
-    placeholder = st.empty()  # Create a placeholder
-    full_text = ""
-    for char in text:
-        full_text += char
-        placeholder.markdown(f"**AI Assistant:** {full_text}", unsafe_allow_html=True)
-        time.sleep(0.005)  # Adjust the speed of the typing effect
+# Function to assemble chat history
+def assemble_chat(messages, current_response=""):
+    chat_history = ""
+    for message in messages:
+        if message["role"] == "user":
+            chat_history += f"**You:** {message['content']}\n\n"
+        elif message["role"] == "assistant":
+            chat_history += f"**AI Assistant:** {message['content']}\n\n"
+    if current_response:
+        chat_history += f"**AI Assistant:** {current_response}"
+    return chat_history
 
 # OpenAI GPT-4o setup
 openai.api_key = st.secrets["openai_api_key"]
 
+# Placeholder for chat history
+chat_placeholder = st.empty()
+
 # Streamlit app title
+st.image("logo.jpg", width=150)  # Display your logo image
 st.title("Teeth Classification with AI Magic 🦷✨")
 
 # File uploader
@@ -61,40 +73,41 @@ if uploaded_file is not None:
 if "predicted_class" in st.session_state:
     st.markdown("## Chat with Our AI-Powered Dental Assistant 🤖")
 
-    # Display chat history
-    if st.session_state.messages:
-        for message in st.session_state.messages:
-            if message["role"] == "user":
-                st.markdown(f"**You:** {message['content']}")
-            else:
-                st.markdown(f"**AI Assistant:** {message['content']}")
+    # Display initial chat history
+    chat_placeholder.markdown(assemble_chat(st.session_state.messages))
 
     # User input for chatbot
-    user_input = st.text_input("Ask a question related to your tooth classification...", value=st.session_state.user_input, key="user_input")
+    user_input = st.text_input("Ask a question related to your tooth classification...", key="user_input")
 
-    # Show the "Submit Query" button and process the query when clicked
-    if st.button("Submit Query") and st.session_state.user_input:
+    if user_input and st.button("Submit Query"):
         # Add user's message to chat history
-        st.session_state.messages.append({"role": "user", "content": st.session_state.user_input})
+        st.session_state.messages.append({"role": "user", "content": user_input})
 
         # Example prompt to GPT-4o-2024-08-06 for chatbot
-        chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{st.session_state.user_input}'. Provide a detailed response."
+        chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
 
-        response = openai.chat.completions.create(
-            model="gpt-4o-2024-08-06",  # Using the specified model
-            messages=[
-                {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice. Answer your response according to the part of {The user asked in the prompt}"},
-                {"role": "user", "content": chatbot_prompt}
-            ],
-        )
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-4o-2024-08-06",  # Using the specified model
+                messages=[
+                    {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice."},
+                    {"role": "user", "content": chatbot_prompt}
+                ],
+            )
 
-        chatbot_response = response.choices[0].message.content.strip()
+            chatbot_response = response.choices[0].message.content.strip()
 
-        # Add AI's response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
+            # Add AI's response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": chatbot_response})
 
-        # Stream the response with typing effect
-        stream_text(chatbot_response)
+            # Stream the response with typing effect
+            simulate_typing(chatbot_response, chat_placeholder)
 
-        # Reset the user input field
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+
+        # Reset the input field
         st.session_state.user_input = ""
+
+# User input with a placeholder only (no label)
+st.text_input("", placeholder="Type your message here...", key="user_input", on_change=lambda: process_input())
