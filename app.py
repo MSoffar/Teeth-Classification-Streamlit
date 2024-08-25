@@ -88,15 +88,12 @@ if st.button("Submit Query") and user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     # Example prompt to GPT-4o-2024-08-06 for chatbot, including the tooth classification
-    chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response."
+    chatbot_prompt = f"You have classified a tooth as {st.session_state.predicted_class}. The user asked: '{user_input}'. Provide a detailed response without repeating previous information."
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4o-2024-08-06",  # Using the specified model
-            messages=[
-                {"role": "system", "content": "You are a PhD dentist with great knowledge in dental care. Provide concise, accurate, and actionable advice. Please focus your reply on the user's specific query."},
-                {"role": "user", "content": chatbot_prompt}
-            ],
+            messages=st.session_state.messages + [{"role": "user", "content": chatbot_prompt}],
         )
 
         chatbot_response = response.choices[0].message.content.strip()
