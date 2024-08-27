@@ -2,5 +2,4 @@ streamlit
 tensorflow
 Pillow
 openai
-smtplib
-email
+requests
